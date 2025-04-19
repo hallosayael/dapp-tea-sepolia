@@ -88,19 +88,19 @@
 </head>
 <body>
   <div class="container">
-    <h2>One-Sided AddLP DApp (Tea Sepolia)</h2>
+    <h2>DApp-AddLP (Tea Sepolia)</h2>
     <button id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
     <div id="wallet" class="hidden"></div>
     <button id="disconnectBtn" class="hidden" onclick="disconnectWallet()">Disconnect</button>
 
-    <h3>Tambah Likuiditas dengan Token $TEA</h3>
-    <input id="amountTokenA" placeholder="Jumlah Token TEA" />
+    <h3>ADD LP dengan Token $tTEA</h3>
+    <input id="amountTokenA" placeholder="Jumlah Token tTEA" />
     <button onclick="zapIntoLP()">ADD LP</button>
   </div>
 
   <script>
-    const tokenBAddress = "0xc0798fc3a96979ACfc0C0bBaf0e43F593C08cfEa";
-    const tokenAAddress = "0xC19CdD287d3fBDa68FeC72E22e3Ced53a8f63858";
+    const tokenAAddress = "0xc0798fc3a96979ACfc0C0bBaf0e43F593C08cfEa";
+    const tokenBAddress = "0xC19CdD287d3fBDa68FeC72E22e3Ced53a8f63858";
     const routerAddress = "0xeE567Fe1712Faf6149d80dA1E6934E354124CfE3";
 
     const abiERC20 = [
