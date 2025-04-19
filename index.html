@@ -47,8 +47,12 @@
 
     #wallet {
       margin-top: 1rem;
-      font-weight: bold;
-      color: #ccc;
+      font-weight: 500;
+      color: #00ffc2;
+      background-color: #222;
+      padding: 0.5rem 1rem;
+      border-radius: 10px;
+      display: inline-block;
     }
 
     input {
@@ -71,6 +75,10 @@
       text-align: center;
     }
 
+    .hidden {
+      display: none;
+    }
+
     @media (max-width: 480px) {
       input {
         width: 100%;
@@ -81,8 +89,9 @@
 <body>
   <div class="container">
     <h2>One-Sided AddLP DApp (Tea Sepolia)</h2>
-    <button onclick="connectWallet()">Connect Wallet</button>
-    <div id="wallet"></div>
+    <button id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
+    <div id="wallet" class="hidden"></div>
+    <button id="disconnectBtn" class="hidden" onclick="disconnectWallet()">Disconnect</button>
 
     <h3>Tambah Likuiditas dengan Token $TEA</h3>
     <input id="amountTokenA" placeholder="Jumlah Token TEA" />
@@ -107,19 +116,43 @@
 
     let provider, signer, userAddress;
 
+    function truncateAddress(addr) {
+      return addr.slice(0, 6) + "..." + addr.slice(-4);
+    }
+
     async function connectWallet() {
       if (window.ethereum) {
         provider = new ethers.BrowserProvider(window.ethereum);
         await provider.send("eth_requestAccounts", []);
         signer = await provider.getSigner();
         userAddress = await signer.getAddress();
-        document.getElementById("wallet").innerText = "Terhubung: " + userAddress;
+
+        document.getElementById("wallet").innerText = "✅ Connected: " + truncateAddress(userAddress);
+        document.getElementById("wallet").classList.remove("hidden");
+        document.getElementById("connectBtn").classList.add("hidden");
+        document.getElementById("disconnectBtn").classList.remove("hidden");
       } else {
         alert("Silakan instal MetaMask terlebih dahulu.");
       }
     }
 
+    function disconnectWallet() {
+      provider = null;
+      signer = null;
+      userAddress = null;
+
+      document.getElementById("wallet").classList.add("hidden");
+      document.getElementById("wallet").innerText = "";
+      document.getElementById("connectBtn").classList.remove("hidden");
+      document.getElementById("disconnectBtn").classList.add("hidden");
+    }
+
     async function zapIntoLP() {
+      if (!signer || !userAddress) {
+        alert("Silakan connect wallet terlebih dahulu.");
+        return;
+      }
+
       const amountInput = document.getElementById("amountTokenA").value;
       const tokenA = new ethers.Contract(tokenAAddress, abiERC20, signer);
       const tokenB = new ethers.Contract(tokenBAddress, abiERC20, signer);
