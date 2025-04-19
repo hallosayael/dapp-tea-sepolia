@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>DApp-AddLP - Tea Sepolia</title>
+  <title>DApp Add LP 2 Token - Tea Sepolia</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.6.2/dist/ethers.umd.min.js"></script>
   <style>
     * {
@@ -88,14 +88,15 @@
 </head>
 <body>
   <div class="container">
-    <h2>DApp-AddLP (Tea Sepolia)</h2>
+    <h2>DApp Add LP - 2 Token</h2>
     <button id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
     <div id="wallet" class="hidden"></div>
     <button id="disconnectBtn" class="hidden" onclick="disconnectWallet()">Disconnect</button>
 
-    <h3>ADD LP dengan Token $tTEA</h3>
-    <input id="amountTokenA" placeholder="Jumlah Token tTEA" />
-    <button onclick="zapIntoLP()">ADD LP</button>
+    <h3>Tambah Likuiditas (2 Token)</h3>
+    <input id="amountTokenA" placeholder="Jumlah Token A (tTEA)" />
+    <input id="amountTokenB" placeholder="Jumlah Token B (Token B)" />
+    <button onclick="addLPWithBothTokens()">Add LP 2 Token</button>
   </div>
 
   <script>
@@ -110,7 +111,6 @@
     ];
 
     const abiRouter = [
-      "function swapExactTokensForTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) external returns (uint[] memory amounts)",
       "function addLiquidity(address tokenA, address tokenB, uint amountADesired, uint amountBDesired, uint amountAMin, uint amountBMin, address to, uint deadline) external returns (uint amountA, uint amountB, uint liquidity)"
     ];
 
@@ -147,55 +147,43 @@
       document.getElementById("disconnectBtn").classList.add("hidden");
     }
 
-    async function zapIntoLP() {
+    async function addLPWithBothTokens() {
       if (!signer || !userAddress) {
         alert("Silakan connect wallet terlebih dahulu.");
         return;
       }
 
-      const amountInput = document.getElementById("amountTokenA").value;
+      const amountA = document.getElementById("amountTokenA").value;
+      const amountB = document.getElementById("amountTokenB").value;
+
       const tokenA = new ethers.Contract(tokenAAddress, abiERC20, signer);
       const tokenB = new ethers.Contract(tokenBAddress, abiERC20, signer);
       const router = new ethers.Contract(routerAddress, abiRouter, signer);
 
-      const decimals = await tokenA.decimals();
-      const totalAmount = ethers.parseUnits(amountInput, decimals);
-      const halfAmount = totalAmount / 2n;
+      const decimalsA = await tokenA.decimals();
+      const decimalsB = await tokenB.decimals();
+
+      const amountADesired = ethers.parseUnits(amountA, decimalsA);
+      const amountBDesired = ethers.parseUnits(amountB, decimalsB);
 
       const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
 
-      await tokenA.approve(routerAddress, totalAmount);
-      console.log("Token TEA approved.");
+      await tokenA.approve(routerAddress, amountADesired);
+      await tokenB.approve(routerAddress, amountBDesired);
 
-      const path = [tokenAAddress, tokenBAddress];
-      const swapTx = await router.swapExactTokensForTokens(
-        halfAmount,
-        0,
-        path,
-        userAddress,
-        deadline
-      );
-      await swapTx.wait();
-      console.log("Penukaran Token A ke Token B selesai.");
-
-      const balanceA = await tokenA.balanceOf(userAddress);
-      const balanceB = await tokenB.balanceOf(userAddress);
-
-      await tokenB.approve(routerAddress, balanceB);
-      console.log("Token B disetujui.");
-
-      const addTx = await router.addLiquidity(
+      const tx = await router.addLiquidity(
         tokenAAddress,
         tokenBAddress,
-        balanceA,
-        balanceB,
+        amountADesired,
+        amountBDesired,
         0,
         0,
         userAddress,
         deadline
       );
-      await addTx.wait();
-      alert("ADD LP SUCCESS!");
+
+      await tx.wait();
+      alert("✅ Add LP Success (2 token)!");
     }
   </script>
 </body>
